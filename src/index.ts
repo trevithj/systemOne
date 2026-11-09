@@ -1,16 +1,19 @@
-import { greet } from "./greet.js";
-import { runRequestsS1 } from "./jevish/ollamaRunners.js";
+import { runProblemsS1 } from "./jevish/ollamaRunners.js";
 
-import getRequest1 from "./jevish/problem01WhereIsTheCat.js";
-import getRequest2 from "./jevish/problem02Socrates.js";
+import sallyAnne from "./jevish/problem01SallyAnne.js";
+import socrates from "./jevish/problem02Socrates.js";
 import syllogisms from "./jevish/problem03Syllogisms.js";
 
-console.log(greet("world"));
+// const MODEL = "kev:0.8b-q8_0";
+const MODEL = "tev1:4b";
 
-const kevRequests = [
-    getRequest1("kev:0.8b-q8_0"),
-    getRequest2("kev:0.8b-q8_0"),
-    ...syllogisms.getRequests("kev:0.8b-q8_0"),
-];
+console.log("Model: " + MODEL);
 
-runRequestsS1(kevRequests);
+console.log("Sally-Anne test");
+await runProblemsS1(MODEL, sallyAnne);
+
+console.log("Socrates");
+await runProblemsS1(MODEL, socrates);
+
+console.log("Syllogisms");
+await runProblemsS1(MODEL, syllogisms);

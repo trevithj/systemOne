@@ -1,9 +1,9 @@
 import type {
+    SystemOneNoulAnswer,
     SystemOneQuestion,
     SystemOneRequest,
     SystemOneResponse,
 } from "ollama";
-import { getAnswerText } from "./displayers.js";
 import type { Problem } from "./interfaces.js";
 
 const states = [
@@ -12,8 +12,6 @@ const states = [
     "If it rains, the ground gets wet. It has rained.",
     "If it rains, the ground gets wet. It has not rained.",
 ];
-
-// const state = "If it rains, the ground gets wet.";
 
 const questions: Record<string, SystemOneQuestion> = {
     isWet: {
@@ -32,36 +30,28 @@ const makeRequest = (state: string, model: string): SystemOneRequest => ({
     questions,
 });
 
-// getRequest('kev:0.8b-q8_0');
-// const getRequest = (model: string): SystemOneRequest => ({
-//     model,
-//     state,
-//     questions,
-// });
+function toPercent(confidence: number) {
+    return `${Math.round(100 * confidence)}%`;
+}
 
-// export default getRequest;
+function displayAnswers(req: SystemOneRequest, res: SystemOneResponse) {
+    const entries = Object.entries(req.questions);
+    console.log(req.state);
+    entries.forEach(([key, question]) => {
+        const qText = question.instructions;
+        const answer = res.answers[key] as SystemOneNoulAnswer;
+        if (!answer) return;
+        console.log(
+            `${key}: ${qText}\n\tActual: Yes=${toPercent(answer.noul)}`,
+        );
+    });
+}
 
 const getRequests = (model: string): SystemOneRequest[] => {
     return states.map((state) => {
         return makeRequest(state, model);
     });
 };
-
-// Consider a fn signature that is simple but maximally flexible.
-function displayAnswers(
-    request: SystemOneRequest,
-    response: SystemOneResponse,
-) {
-    console.log(request.state);
-
-    const entries = Object.entries(request.questions);
-    entries.forEach(([key, questn]) => {
-        const answer = response.answers[key];
-        if (!answer) return;
-        const text = getAnswerText(answer);
-        console.log(`${questn.instructions}\t${text}`);
-    });
-}
 
 const syllogisms: Problem = { getRequests, displayAnswers };
 

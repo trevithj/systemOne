@@ -1,4 +1,10 @@
-import type { SystemOneQuestion, SystemOneRequest } from "ollama";
+import type {
+    SystemOneNoulAnswer,
+    SystemOneQuestion,
+    SystemOneRequest,
+    SystemOneResponse,
+} from "ollama";
+import type { Problem } from "./interfaces.js";
 
 const state = `
 All men are mammals.
@@ -46,11 +52,42 @@ const questions: Record<string, SystemOneQuestion> = {
     },
 };
 
-// getRequest('kev:0.8b-q8_0');
-const getRequest = (model: string): SystemOneRequest => ({
-    model,
-    state,
-    questions,
-});
+const expectedMap: Record<string, number> = {
+    isMortal: 1,
+    isWhaleAFish: 0,
+    isWhaleAMan: 0,
+    isGuppyAMammal: 0,
+    isWhale: 0,
+    isGroup: 0,
+    isGroup2: 0,
+    isKnown: 0.5,
+};
 
-export default getRequest;
+// getRequest('kev:0.8b-q8_0');
+const getRequests = (model: string): SystemOneRequest[] => [
+    {
+        model,
+        state,
+        questions,
+    },
+];
+
+function toPercent(confidence: number) {
+    return `${Math.round(100 * confidence)}%`;
+}
+
+function displayAnswers(req: SystemOneRequest, res: SystemOneResponse) {
+    const entries = Object.entries(req.questions);
+    entries.forEach(([key, question]) => {
+        const qText = question.instructions;
+        const answer = res.answers[key] as SystemOneNoulAnswer;
+        if (!answer) return;
+        const expected = expectedMap[key];
+        console.log(
+            `${key}: ${qText}\n\tActual: ${toPercent(answer.noul)}, Expected: ${expected}`,
+        );
+    });
+}
+
+const socrates: Problem = { getRequests, displayAnswers };
+export default socrates;

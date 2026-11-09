@@ -1,4 +1,10 @@
-import type { SystemOneAnswer, SystemOneChoiceAnswer } from "ollama";
+import type {
+    SystemOneAnswer,
+    SystemOneChoiceAnswer,
+    SystemOneQuestion,
+    SystemOneRequest,
+    SystemOneResponse,
+} from "ollama";
 
 export function getCertaintyText(value = 0) {
     if (value < 0.15) return "I guess...";
@@ -29,3 +35,48 @@ export function getAnswerText(answer: SystemOneAnswer) {
             return "Not implementing the score yet";
     }
 }
+
+export function displayAnswer(
+    question: SystemOneQuestion,
+    answer: SystemOneAnswer,
+) {
+    const { instructions } = question;
+    const { type } = answer;
+    if (type === "noul") {
+        console.log(`${instructions}\t${getNoulText(answer.noul)}`);
+        return;
+    }
+    const text = getCertaintyText(answer.confidence);
+    if (type === "choice") {
+        console.log(`${instructions}\t${text}, ${answer.choice}`);
+        return;
+    }
+    console.log(instructions, answer);
+}
+
+export function defaultDisplayAnswers(
+    req: SystemOneRequest,
+    res: SystemOneResponse,
+) {
+    const entries = Object.entries(req.questions);
+    entries.forEach(([key, question]) => {
+        const answer = res.answers[key];
+        if (!answer) return;
+        displayAnswer(question, answer);
+    });
+}
+
+// export function defaultDisplayAnswers(
+//     request: SystemOneRequest,
+//     response: SystemOneResponse,
+// ) {
+//     console.log(request.state);
+
+//     const entries = Object.entries(request.questions);
+//     entries.forEach(([key, questn]) => {
+//         const answer = response.answers[key];
+//         if (!answer) return;
+//         const text = getAnswerText(answer);
+//         console.log(`${questn.instructions}\t${text}`);
+//     });
+// }
